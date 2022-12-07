@@ -1,20 +1,11 @@
 ---
-- name: Copy a file from Local to Server A
-  hosts: all
-  tasks:
-    - name: Add host to Ansible
-      add_host:
-        name: 192.168.56.124
-    - name: Copy to Server A
-      copy:
-        src: "{{ local_dump_path }}"
-        dest: "/home/{{ ansible_user }}"
-
 - name:
-  hosts: all
+  hosts: server_b
   vars:
-    server_a: 192.168.56.124
-    server_b: 192.168.56.125
+    # SET VALUES FOR ALL THE VARS
+    server_a:
+    server_b:
+    server_b_home: '/home/penn'
     db_host:
     db_user:
     db_password:
@@ -22,23 +13,33 @@
   tasks:
     - name: Perform PUSH process
       block:
-        - name: Add Server B to Ansible hosts
-          add_host:
-            name: "{{ server_b }}"
+        - name: Copy to Server A
+          copy:
+            src: "{{ local_dump_path }}"
+            dest: "/home/{{ ansible_user }}"
+          delegate_to: "{{ server_a }}"
         - name: Copy from Server A to Server B
           synchronize:
             src: "/home/{{ ansible_user }}/{{ local_dump_path.split('/')[-1] }}"
-            dest: "/home/{{ ansible_user }}"
+            dest: "{{ server_b_home }}"
             mode: push
           delegate_to: "{{ server_a }}"
+        - name: Check files
+          shell:
+            cmd: "ssh -o StrictHostKeyChecking=no {{ ansible_user }}@{{ server_b }} 'ls -la {{ server_b_home }}/{{ local_dump_path.split('/')[-1] }}'"
+          register: checkb
+          delegate_to: "{{ server_a }}"
+        - name:
+          debug:
+            msg: "{{ checkb.stdout }}"
         - name: Import DB
           shell:
-            cmd: "ssh -o StrictHostKeyChecking=no {{ ansible_user }}@{{ server_b }} 'mysql --force -h {{ db_host }} -u {{ db_user }} --password={{ db_password }} {{ db_name }} < /home/{{ ansible_user }}/{{ local_dump_path.split('/')[-1] }}'"
+            cmd: "ssh -o StrictHostKeyChecking=no {{ ansible_user }}@{{ server_b }} 'mysql --force -h {{ db_host }} -u {{ db_user }} --password={{ db_password }} {{ db_name }} < {{ server_b_home }}/{{ local_dump_path.split('/')[-1] }}'"
           delegate_to: "{{ server_a }}"
       always:
         - name: Clean files on Server B
           shell:
-            cmd: "ssh -o StrictHostKeyChecking=no {{ ansible_user }}@{{ server_b }} 'rm -f /home/{{ ansible_user }}/{{ local_dump_path.split('/')[-1] }}'"
+            cmd: "ssh -o StrictHostKeyChecking=no {{ ansible_user }}@{{ server_b }} 'rm -f {{ server_b_home }}/{{ local_dump_path.split('/')[-1] }}'"
           delegate_to: "{{ server_a }}"
         - name: Clean files on Server A
           shell:
