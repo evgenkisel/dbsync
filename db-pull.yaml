@@ -17,7 +17,7 @@
       block:
         - name: Dump a DB on Server B
           shell:
-            cmd: "ssh -o StrictHostKeyChecking=no {{ ansible_user }}@{{ server_b }} 'mysqldump -h {{ db_host }} -u {{ db_user }} --password={{ db_password }} {{ db_name }} > {{ server_b_home }}/{{ db_name }}.sql'"
+            cmd: "ssh -o StrictHostKeyChecking=no {{ ansible_user }}@{{ server_b }} 'mysqldump -h {{ db_host }} -u {{ db_user }} --password='{{ db_password }}' {{ db_name }} > {{ server_b_home }}/{{ db_name }}.sql'"
           delegate_to: "{{ server_a }}"
         - name: Download dump from Server B to Server A
           shell:

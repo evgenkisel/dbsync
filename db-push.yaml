@@ -31,7 +31,7 @@
             msg: "{{ checkb.stdout }}"
         - name: Import DB
           shell:
-            cmd: "ssh -o StrictHostKeyChecking=no {{ ansible_user }}@{{ server_b }} 'mysql --force -h {{ db_host }} -u {{ db_user }} --password={{ db_password }} {{ db_name }} < {{ server_b_home }}/{{ local_dump_path.split('/')[-1] }}'"
+            cmd: "ssh -o StrictHostKeyChecking=no {{ ansible_user }}@{{ server_b }} 'mysql --force -h {{ db_host }} -u {{ db_user }} --password='{{ db_password }}' {{ db_name }} < {{ server_b_home }}/{{ local_dump_path.split('/')[-1] }}'"
           delegate_to: "{{ server_a }}"
       always:
         - name: Clean files on Server B
