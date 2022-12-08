@@ -19,7 +19,7 @@ db_name:
 .....
 ---
 - name:
-  hosts: server_b
+  hosts: server_a
   vars:
     # SET VALUES FOR ALL THE VARS
     server_a:
@@ -28,14 +28,6 @@ db_name:
     db_host:
     db_user:
     db_password:
-    db_name:
-...
-# SOME CODE
-...
-- name: Download from Server A to local machine
-  hosts: server_a
-  vars:
-    # SET VALUES FOR THE VARS
     db_name:
     local_dump_folder:
 ...

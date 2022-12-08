@@ -1,6 +1,6 @@
 ---
 - name:
-  hosts: server_b
+  hosts: server_a
   vars:
     # SET VALUES FOR ALL THE VARS
     server_a:
@@ -10,7 +10,9 @@
     db_user:
     db_password:
     db_name:
+    local_dump_folder:
   tasks:
+
     - name: Perform PULL tasks
       block:
         - name: Dump a DB on Server B
@@ -18,32 +20,19 @@
             cmd: "ssh -o StrictHostKeyChecking=no {{ ansible_user }}@{{ server_b }} 'mysqldump -h {{ db_host }} -u {{ db_user }} --password={{ db_password }} {{ db_name }} > {{ server_b_home }}/{{ db_name }}.sql'"
           delegate_to: "{{ server_a }}"
         - name: Download dump from Server B to Server A
-          synchronize:
-            src: "{{ server_b_home }}/{{ db_name }}.sql"
-            dest: "/home/{{ ansible_user }}"
-            mode: pull
-          delegate_to: "{{ server_a }}"
-      always:
-        - name: Clean on Server B
           shell:
-            cmd: "ssh -o StrictHostKeyChecking=no {{ ansible_user }}@{{ server_b }} 'rm -f {{ server_b_home }}/{{ db_name }}.sql'"
+            cmd: "scp {{ ansible_user }}@{{ server_b }}:{{ server_b_home }}/{{ db_name }}.sql /home/{{ ansible_user }}"
           delegate_to: "{{ server_a }}"
-
-- name: Download from Server A to local machine
-  hosts: server_a
-  vars:
-    # SET VALUES FOR THE VARS
-    db_name:
-    local_dump_folder:
-  tasks:
-    - name: Local sync
-      block:
         - name:
           synchronize:
             src: "/home/{{ ansible_user }}/{{ db_name }}.sql"
             dest: "{{ local_dump_folder }}"
             mode: pull
       always:
+        - name: Clean on Server B
+          shell:
+            cmd: "ssh -o StrictHostKeyChecking=no {{ ansible_user }}@{{ server_b }} 'rm -f {{ server_b_home }}/{{ db_name }}.sql'"
+          delegate_to: "{{ server_a }}"
         - name: Clean on Server A
           shell:
             cmd: "rm -f /home/{{ ansible_user }}/{{ db_name }}.sql"
