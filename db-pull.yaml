@@ -11,6 +11,8 @@
     db_password:
     db_name:
     local_dump_folder:
+    url_original:
+    url_replacement:
   tasks:
     - name: Perform PULL tasks
       block:
