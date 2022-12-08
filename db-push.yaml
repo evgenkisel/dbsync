@@ -1,4 +1,12 @@
 ---
+- name: Copy from local to Server A
+  hosts: server_a
+  tasks:
+    - name: Copy to Server A
+      copy:
+        src: "{{ local_dump_path }}"
+        dest: "/home/{{ ansible_user }}"
+
 - name:
   hosts: server_b
   vars:
@@ -13,11 +21,6 @@
   tasks:
     - name: Perform PUSH process
       block:
-        - name: Copy to Server A
-          copy:
-            src: "{{ local_dump_path }}"
-            dest: "/home/{{ ansible_user }}"
-          delegate_to: "{{ server_a }}"
         - name: Copy from Server A to Server B
           synchronize:
             src: "/home/{{ ansible_user }}/{{ local_dump_path.split('/')[-1] }}"
