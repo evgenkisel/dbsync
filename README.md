@@ -14,6 +14,33 @@ db_name:
 ...
 ```
 
+### Set all variables in the file `db-pull.yaml`
+```yaml
+.....
+---
+- name:
+  hosts: server_b
+  vars:
+    # SET VALUES FOR ALL THE VARS
+    server_a:
+    server_b:
+    server_b_home: '/home/penn'
+    db_host:
+    db_user:
+    db_password:
+    db_name:
+...
+# SOME CODE
+...
+- name: Download from Server A to local machine
+  hosts: server_a
+  vars:
+    # SET VALUES FOR THE VARS
+    db_name:
+    local_dump_folder:
+...
+```
+
 Open the file `inventories/hosts` and update it like
 ```text
 [server_a]
@@ -33,4 +60,14 @@ ansible-playbook \
   -u <your_ssh_user> \
   -e local_dump_path=</absolut/path/to/file> \
   db-push.yaml
+```
+
+## How to PULL
+
+```bash
+ansible-playbook \
+  -i inventories/ \
+  --private-key <path_to_your_ssh_private_key> \
+  -u <your_ssh_user> \
+  db-pull.yaml
 ```
