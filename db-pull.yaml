@@ -12,7 +12,6 @@
     db_name:
     local_dump_folder:
   tasks:
-
     - name: Perform PULL tasks
       block:
         - name: Dump a DB on Server B
@@ -28,6 +27,12 @@
             src: "/home/{{ ansible_user }}/{{ db_name }}.sql"
             dest: "{{ local_dump_folder }}"
             mode: pull
+        - name: Find and Replace URLS
+          replace:
+            path: "{{ local_dump_folder }}/{{ db_name }}.sql"
+            regexp: "{{ url_original }}"
+            replace: "{{ url_replacement }}"
+          delegate_to: localhost
       always:
         - name: Clean on Server B
           shell:
